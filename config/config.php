@@ -12,7 +12,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Application settings
 define('APP_NAME', 'Mechanical FIX');
-define('APP_URL', 'http://localhost');
+define('APP_URL', 'http://localhost:8080');
 define('APP_ENV', 'development'); // development, production
 
 // Security
