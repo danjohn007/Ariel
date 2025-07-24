@@ -11,18 +11,24 @@ require_once __DIR__ . '/../includes/security.php';
  * Check if user is logged in
  */
 function isLoggedIn() {
-    // Determine session name from current page/context
-    $rol = getCurrentUserRole();
-    if ($rol) {
-        session_name('ariel_' . $rol . '_session');
-    }
-    
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
     
-    $user = new User();
-    return $user->verifySession();
+    // Basic session check first
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['last_activity'])) {
+        return false;
+    }
+    
+    // Check session timeout
+    if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
+        return false;
+    }
+    
+    // Update last activity
+    $_SESSION['last_activity'] = time();
+    
+    return true;
 }
 
 /**
@@ -51,8 +57,9 @@ function getCurrentUserRole() {
  * Start session for specific role
  */
 function startRoleSession($rol) {
-    session_name('ariel_' . $rol . '_session');
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 }
 
 /**

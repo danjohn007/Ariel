@@ -1,3 +1,10 @@
+<?php
+// Include authentication and security functions if not already included
+if (!function_exists('isLoggedIn')) {
+    require_once __DIR__ . '/../../includes/auth.php';
+    require_once __DIR__ . '/../../includes/security.php';
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

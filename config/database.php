@@ -5,11 +5,13 @@
  */
 
 // Database configuration
+// For demo purposes, using SQLite
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'ariel_sistema');
+define('DB_NAME', __DIR__ . '/../demo.sqlite');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
+define('DB_CHARSET', 'utf8');
+define('USE_SQLITE', true);
 
 // Security configuration
 define('BCRYPT_COST', 12);

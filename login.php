@@ -183,7 +183,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
         demoInfo.innerHTML = `
             <strong>Credenciales de demostración:</strong><br>
             Email: admin@empresa.com<br>
-            Contraseña: admin123
+            Contraseña: Admin123
         `;
         document.querySelector('.auth-container').appendChild(demoInfo);
     });

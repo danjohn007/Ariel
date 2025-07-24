@@ -166,9 +166,10 @@ class User {
      * Create user session
      */
     private function createSession($user) {
-        // Start session with unique name for user role
-        session_name('ariel_' . $user['rol'] . '_session');
-        session_start();
+        // Start session
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         
         // Regenerate session ID for security
         session_regenerate_id(true);
@@ -186,7 +187,11 @@ class User {
         $sessionId = session_id();
         $sql = "INSERT INTO user_sessions (id, usuario_id, ip_address, user_agent, expires_at) 
                 VALUES (?, ?, ?, ?, ?)";
-        $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);
+        if (defined('USE_SQLITE') && USE_SQLITE) {
+            $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);
+        } else {
+            $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);
+        }
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         
         $this->db->execute($sql, [$sessionId, $user['id'], Security::getClientIP(), $userAgent, $expiresAt]);
@@ -211,7 +216,11 @@ class User {
         
         // Verify session in database
         $sessionId = session_id();
-        $sql = "SELECT usuario_id FROM user_sessions WHERE id = ? AND expires_at > NOW()";
+        if (defined('USE_SQLITE') && USE_SQLITE) {
+            $sql = "SELECT usuario_id FROM user_sessions WHERE id = ? AND expires_at > datetime('now')";
+        } else {
+            $sql = "SELECT usuario_id FROM user_sessions WHERE id = ? AND expires_at > NOW()";
+        }
         $session = $this->db->fetch($sql, [$sessionId]);
         
         if (!$session || $session['usuario_id'] != $_SESSION['user_id']) {
@@ -220,7 +229,11 @@ class User {
         }
         
         // Update session activity in database
-        $sql = "UPDATE user_sessions SET last_activity = NOW() WHERE id = ?";
+        if (defined('USE_SQLITE') && USE_SQLITE) {
+            $sql = "UPDATE user_sessions SET last_activity = datetime('now') WHERE id = ?";
+        } else {
+            $sql = "UPDATE user_sessions SET last_activity = NOW() WHERE id = ?";
+        }
         $this->db->execute($sql, [$sessionId]);
         
         return true;
@@ -266,7 +279,11 @@ class User {
      * Reset failed login attempts
      */
     private function resetFailedAttempts($userId) {
-        $sql = "UPDATE usuarios SET intentos_login = 0, bloqueado_hasta = NULL, ultimo_acceso = NOW() WHERE id = ?";
+        if (defined('USE_SQLITE') && USE_SQLITE) {
+            $sql = "UPDATE usuarios SET intentos_login = 0, bloqueado_hasta = NULL, ultimo_acceso = datetime('now') WHERE id = ?";
+        } else {
+            $sql = "UPDATE usuarios SET intentos_login = 0, bloqueado_hasta = NULL, ultimo_acceso = NOW() WHERE id = ?";
+        }
         $this->db->execute($sql, [$userId]);
     }
     
@@ -290,7 +307,11 @@ class User {
      * Clean expired sessions
      */
     public function cleanExpiredSessions() {
-        $sql = "DELETE FROM user_sessions WHERE expires_at < NOW()";
+        if (defined('USE_SQLITE') && USE_SQLITE) {
+            $sql = "DELETE FROM user_sessions WHERE expires_at < datetime('now')";
+        } else {
+            $sql = "DELETE FROM user_sessions WHERE expires_at < NOW()";
+        }
         $this->db->execute($sql);
     }
 }

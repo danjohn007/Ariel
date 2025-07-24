@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/db.php';
 
 // Require admin access
 verificarAcceso(['admin']);
@@ -13,17 +14,17 @@ $pageTitle = 'Gestión de Usuarios - ' . APP_NAME;
 $pageDescription = 'Panel de administración de usuarios';
 $currentPage = 'usuarios';
 
-$user = new User();
+$db = Database::getInstance();
 
 // Get all users for display
-$usuarios = $user->db->fetchAll("
+$usuarios = $db->fetchAll("
     SELECT id, email, nombre, rol, activo, fecha_creacion, ultimo_acceso 
     FROM usuarios 
     ORDER BY fecha_creacion DESC
 ");
 
 // Get user statistics
-$stats = $user->db->fetch("
+$stats = $db->fetch("
     SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN activo = 1 THEN 1 ELSE 0 END) as activos,
@@ -179,7 +180,7 @@ include __DIR__ . '/../views/layout/header.php';
             </h4>
             <div id="recentActivity">
                 <?php
-                $recentActivity = $user->db->fetchAll("
+                $recentActivity = $db->fetchAll("
                     SELECT la.*, u.nombre, u.email 
                     FROM log_actividad la
                     LEFT JOIN usuarios u ON la.usuario_id = u.id
