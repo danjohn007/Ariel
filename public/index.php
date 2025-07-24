@@ -13,9 +13,10 @@ require_once SRC_PATH . '/includes/functions.php';
 // Inicializar autenticación
 $auth = new Auth();
 
-// Si el usuario ya está logueado, redirigir al dashboard
+// Si el usuario ya está logueado, redirigir al dashboard correspondiente
 if ($auth->isLoggedIn()) {
-    header('Location: /dashboard.php');
+    $dashboardUrl = $auth->getDashboardUrl();
+    header("Location: $dashboardUrl");
     exit;
 }
 
@@ -36,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $auth->login($email, $password);
         
         if ($result['success']) {
-            header('Location: /dashboard.php');
+            $dashboardUrl = $auth->getDashboardUrl();
+            header("Location: $dashboardUrl");
             exit;
         } else {
             $error = $result['message'];
@@ -106,6 +108,14 @@ ob_start();
                     <hr class="my-4">
                     
                     <div class="text-center">
+                        <p class="mb-3">
+                            ¿No tienes una cuenta? 
+                            <a href="/register.php" class="text-decoration-none">
+                                <i class="bi bi-person-plus"></i>
+                                Registrarse
+                            </a>
+                        </p>
+                        
                         <h6 class="text-muted mb-3">Usuarios de Prueba:</h6>
                         <div class="row g-2">
                             <div class="col-12">

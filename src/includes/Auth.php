@@ -247,7 +247,7 @@ class Auth {
      */
     public function requireAuth() {
         if (!$this->isLoggedIn()) {
-            header('Location: /login.php');
+            header('Location: /');
             exit;
         }
     }
@@ -275,6 +275,92 @@ class Auth {
             header('HTTP/1.1 403 Forbidden');
             header('Location: /dashboard.php?error=access_denied');
             exit;
+        }
+    }
+    
+    /**
+     * Obtener URL del dashboard según el rol del usuario
+     */
+    public function getDashboardUrl($role = null) {
+        $userRole = $role ?? ($_SESSION['user_role'] ?? null);
+        
+        switch ($userRole) {
+            case ROLE_ADMIN:
+                return '/admin/dashboard.php';
+            case ROLE_ANALYST:
+                return '/analista/dashboard.php';
+            case ROLE_VISITOR:
+                return '/visitante/dashboard.php';
+            default:
+                return '/dashboard.php';
+        }
+    }
+    
+    /**
+     * Registrar nuevo usuario (solo para analista y visitante)
+     */
+    public function register($nombre, $apellidos, $email, $password, $rol = ROLE_VISITOR) {
+        try {
+            // Validar que no se pueda registrar como admin
+            if ($rol === ROLE_ADMIN) {
+                return [
+                    'success' => false,
+                    'message' => 'No se permite registrar usuarios administradores desde el sistema web.'
+                ];
+            }
+            
+            // Validar que el rol sea válido para registro web
+            if (!in_array($rol, [ROLE_ANALYST, ROLE_VISITOR])) {
+                return [
+                    'success' => false,
+                    'message' => 'Rol no válido para registro.'
+                ];
+            }
+            
+            // Verificar si el email ya existe
+            $sql = "SELECT id FROM usuarios WHERE email = ?";
+            $existingUser = $this->db->fetchOne($sql, [$email]);
+            
+            if ($existingUser) {
+                return [
+                    'success' => false,
+                    'message' => 'Ya existe un usuario registrado con este correo electrónico.'
+                ];
+            }
+            
+            // Hashear contraseña
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            
+            // Insertar nuevo usuario
+            $userData = [
+                'nombre' => $nombre,
+                'apellidos' => $apellidos,
+                'email' => $email,
+                'password' => $hashedPassword,
+                'rol' => $rol,
+                'activo' => 1
+            ];
+            
+            $userId = $this->db->insert('usuarios', $userData);
+            
+            // Registrar en logs de auditoría
+            $this->logAction('register', 'usuarios', $userId, null, [
+                'email' => $email,
+                'rol' => $rol,
+                'ip' => $this->getClientIP()
+            ]);
+            
+            return [
+                'success' => true,
+                'message' => 'Usuario registrado exitosamente.',
+                'user_id' => $userId
+            ];
+            
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error al registrar el usuario: ' . $e->getMessage()
+            ];
         }
     }
 }
