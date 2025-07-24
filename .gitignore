@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sqlite
+*.db
+
+# Configuration files with sensitive data
+config/production.php
+config/local.php
+.env
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Uploads
+uploads/
+files/
+
+# Backup files
+*.bak
+*.backup
